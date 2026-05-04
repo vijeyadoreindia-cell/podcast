@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Dark background -->
+  <rect width="64" height="64" rx="10" fill="#07070a"/>
+  <!-- Gold border -->
+  <rect width="64" height="64" rx="10" fill="none" stroke="#c9a84c" stroke-width="2"/>
+  <!-- Gold diamond accent top -->
+  <rect x="30" y="6" width="4" height="4" rx="0.5" fill="#c9a84c" transform="rotate(45 32 8)"/>
+  <!-- "PWS" letters -->
+  <text x="32" y="38" font-family="Georgia, serif" font-size="18" font-weight="bold"
+        fill="#c9a84c" text-anchor="middle" letter-spacing="0.5">PWS</text>
+  <!-- Bottom thin gold line -->
+  <line x1="14" y1="46" x2="50" y2="46" stroke="#c9a84c" stroke-width="1" stroke-opacity="0.5"/>
+  <!-- Tiny dot below -->
+  <circle cx="32" cy="52" r="2" fill="#c9a84c" opacity="0.7"/>
+</svg>

@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PWS Admin</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+  <link rel="alternate icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%2307070a'/%3E%3Crect width='64' height='64' rx='10' fill='none' stroke='%23c9a84c' stroke-width='2'/%3E%3Crect x='30' y='6' width='4' height='4' rx='0.5' fill='%23c9a84c' transform='rotate(45 32 8)'/%3E%3Ctext x='32' y='38' font-family='Georgia,serif' font-size='18' font-weight='bold' fill='%23c9a84c' text-anchor='middle' letter-spacing='0.5'%3EPWS%3C/text%3E%3Cline x1='14' y1='46' x2='50' y2='46' stroke='%23c9a84c' stroke-width='1' stroke-opacity='0.5'/%3E%3Ccircle cx='32' cy='52' r='2' fill='%23c9a84c' opacity='0.7'/%3E%3C/svg%3E"/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #07070a;
+      --surface: #0f0f14;
+      --surface2: #15151c;
+      --gold: #c9a84c;
+      --gold-dim: #8a6e2f;
+      --gold-glow: rgba(201,168,76,0.12);
+      --cream: #f0ead8;
+      --muted: #6b6456;
+      --border: rgba(201,168,76,0.15);
+      --red: #c94c4c;
+      --green: #4cc97a;
+    }
+    body {
+      background: var(--bg);
+      color: var(--cream);
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      min-height: 100vh;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 9999; opacity: .5;
+    }
+
+    /* ── LOGIN SCREEN ── */
+    #login-screen {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 2rem; padding: 2rem;
+      text-align: center;
+    }
+    .login-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3rem; letter-spacing: .12em; color: var(--gold);
+    }
+    .login-sub {
+      font-family: 'DM Mono', monospace;
+      font-size: .65rem; letter-spacing: .3em;
+      color: var(--muted); text-transform: uppercase;
+    }
+    .login-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 2.5rem 3rem;
+      max-width: 380px; width: 100%;
+    }
+    .login-box h2 {
+      font-size: 1.6rem; font-weight: 300; margin-bottom: .4rem;
+    }
+    .login-box p {
+      font-family: 'DM Mono', monospace;
+      font-size: .62rem; letter-spacing: .15em;
+      color: var(--muted); margin-bottom: 2rem; text-transform: uppercase;
+    }
+    .google-btn {
+      display: flex; align-items: center; justify-content: center; gap: .8rem;
+      width: 100%; padding: .9rem 1.5rem;
+      background: #fff; border: none; border-radius: 4px;
+      color: #333; font-family: 'DM Mono', monospace;
+      font-size: .72rem; letter-spacing: .12em; text-transform: uppercase;
+      cursor: pointer; transition: opacity .2s;
+    }
+    .google-btn:hover { opacity: .9; }
+    .google-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+    .login-error {
+      margin-top: 1rem;
+      font-family: 'DM Mono', monospace;
+      font-size: .62rem; color: var(--red);
+      letter-spacing: .1em; display: none;
+    }
+    .login-error.show { display: block; }
+
+    /* ── ADMIN LAYOUT ── */
+    #admin-screen { display: none; }
+    .admin-nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 2rem;
+      background: rgba(7,7,10,0.9);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .admin-brand {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.5rem; letter-spacing: .1em; color: var(--gold);
+    }
+    .admin-brand span {
+      font-family: 'DM Mono', monospace;
+      font-size: .6rem; letter-spacing: .2em;
+      color: var(--muted); margin-left: .8rem; vertical-align: middle;
+    }
+    .nav-right { display: flex; align-items: center; gap: 1.2rem; }
+    .user-pill {
+      display: flex; align-items: center; gap: .6rem;
+      font-family: 'DM Mono', monospace;
+      font-size: .62rem; letter-spacing: .12em; color: var(--muted);
+    }
+    .user-avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      border: 1px solid var(--gold-dim);
+      object-fit: cover;
+    }
+    .signout-btn {
+      background: none; border: 1px solid var(--border);
+      color: var(--muted); padding: .4rem .9rem;
+      font-family: 'DM Mono', monospace;
+      font-size: .58rem; letter-spacing: .15em; text-transform: uppercase;
+      cursor: pointer; border-radius: 2px; transition: all .2s;
+    }
+    .signout-btn:hover { border-color: var(--red); color: var(--red); }
+    .site-link {
+      padding: .4rem 1rem;
+      border: 1px solid var(--gold-dim);
+      color: var(--gold); border-radius: 2px;
+      font-family: 'DM Mono', monospace;
+      font-size: .58rem; letter-spacing: .15em; text-transform: uppercase;
+      text-decoration: none; transition: all .2s;
+    }
+    .site-link:hover { background: var(--gold); color: var(--bg); }
+
+    /* ── MAIN CONTENT ── */
+    .admin-main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 2rem 5rem;
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 2.5rem;
+      align-items: start;
+    }
+    @media (max-width: 800px) { .admin-main { grid-template-columns: 1fr; } }
+
+    /* ── FORM PANEL ── */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .panel-header {
+      padding: 1.2rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .panel-title {
+      font-family: 'DM Mono', monospace;
+      font-size: .65rem; letter-spacing: .25em;
+      color: var(--gold); text-transform: uppercase;
+    }
+    .panel-body { padding: 1.5rem; }
+
+    label {
+      display: block;
+      font-family: 'DM Mono', monospace;
+      font-size: .6rem; letter-spacing: .2em;
+      color: var(--muted); text-transform: uppercase;
+      margin-bottom: .4rem; margin-top: 1.1rem;
+    }
+    label:first-child { margin-top: 0; }
+    input, textarea, select {
+      width: 100%; padding: .7rem .9rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      color: var(--cream);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1rem; font-weight: 300;
+      outline: none; transition: border-color .2s;
+    }
+    input:focus, textarea:focus, select:focus { border-color: var(--gold-dim); }
+    textarea { resize: vertical; min-height: 70px; }
+    select option { background: var(--surface2); }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+    /* Thumbnail preview */
+    .thumb-preview {
+      width: 100%; aspect-ratio: 16/9;
+      background: linear-gradient(135deg, #1a1a2e, #0f0f1a);
+      border: 1px solid var(--border); border-radius: 3px;
+      margin-top: .5rem;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'DM Mono', monospace;
+      font-size: .6rem; letter-spacing: .15em; color: var(--muted);
+      overflow: hidden; position: relative;
+    }
+    .thumb-preview img { width: 100%; height: 100%; object-fit: cover; }
+    .thumb-preview canvas { width: 100% !important; height: auto !important; }
+
+    /* Buttons */
+    .btn-row { display: flex; gap: .8rem; margin-top: 1.4rem; flex-wrap: wrap; }
+    .btn {
+      padding: .75rem 1.4rem;
+      font-family: 'DM Mono', monospace;
+      font-size: .65rem; letter-spacing: .15em; text-transform: uppercase;
+      border-radius: 3px; cursor: pointer; transition: all .2s;
+      border: none; flex: 1;
+    }
+    .btn-primary {
+      background: var(--gold); color: var(--bg);
+    }
+    .btn-primary:hover { opacity: .88; }
+    .btn-primary:disabled { opacity: .4; cursor: not-allowed; }
+    .btn-secondary {
+      background: transparent; border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .btn-secondary:hover { border-color: var(--gold-dim); color: var(--gold); }
+    .btn-generate {
+      background: transparent; border: 1px solid var(--gold-dim);
+      color: var(--gold); width: 100%;
+    }
+    .btn-generate:hover { background: var(--gold-glow); }
+    .btn-danger {
+      background: transparent; border: 1px solid rgba(201,76,76,0.3);
+      color: var(--red);
+    }
+    .btn-danger:hover { background: rgba(201,76,76,0.1); }
+
+    .status-msg {
+      font-family: 'DM Mono', monospace;
+      font-size: .62rem; letter-spacing: .12em;
+      padding: .6rem .9rem; border-radius: 3px;
+      margin-top: .8rem; display: none;
+    }
+    .status-msg.success { display: block; background: rgba(76,201,122,0.12); color: var(--green); border: 1px solid rgba(76,201,122,0.2); }
+    .status-msg.error { display: block; background: rgba(201,76,76,0.12); color: var(--red); border: 1px solid rgba(201,76,76,0.2); }
+
+    /* ── EPISODES LIST ── */
+    .ep-list { display: flex; flex-direction: column; gap: 1rem; }
+    .ep-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      display: flex; gap: 1rem;
+      overflow: hidden;
+      transition: border-color .2s;
+    }
+    .ep-item:hover { border-color: var(--gold-dim); }
+    .ep-item-thumb {
+      width: 140px; flex-shrink: 0;
+      background: linear-gradient(135deg, #1a1a2e, #0f0f1a);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'DM Mono', monospace;
+      font-size: .55rem; color: var(--muted); text-align: center;
+      padding: .5rem;
+    }
+    .ep-item-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .ep-item-body { padding: 1rem; flex: 1; min-width: 0; }
+    .ep-item-num {
+      font-family: 'DM Mono', monospace;
+      font-size: .6rem; letter-spacing: .2em;
+      color: var(--gold); margin-bottom: .25rem;
+    }
+    .ep-item-title { font-size: 1.1rem; font-weight: 400; margin-bottom: .2rem; }
+    .ep-item-speaker { font-size: .9rem; color: var(--muted); }
+    .ep-item-actions {
+      display: flex; gap: .5rem;
+      padding: 1rem; align-items: center;
+    }
+    .icon-btn {
+      background: none; border: 1px solid var(--border);
+      color: var(--muted); padding: .4rem .7rem;
+      font-size: .8rem; cursor: pointer; border-radius: 2px;
+      transition: all .2s;
+    }
+    .icon-btn:hover { border-color: var(--red); color: var(--red); }
+    .icon-btn.edit:hover { border-color: var(--gold-dim); color: var(--gold); }
+
+    .empty-list {
+      text-align: center; padding: 3rem;
+      color: var(--muted); font-style: italic;
+    }
+    .loading-spinner {
+      text-align: center; padding: 2rem;
+      font-family: 'DM Mono', monospace;
+      font-size: .62rem; letter-spacing: .2em; color: var(--muted);
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:.4} 50%{opacity:1} }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div>
+    <div class="login-logo">PWS</div>
+    <div class="login-sub">Podcast With Stories · Admin</div>
+  </div>
+  <div class="login-box">
+    <h2>Admin Login</h2>
+    <p>Super Admin Access Only</p>
+    <button class="google-btn" id="google-login-btn">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+      </svg>
+      Sign in with Google
+    </button>
+    <div class="login-error" id="login-error">Access denied. Only the super admin can log in.</div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="admin-screen">
+  <nav class="admin-nav">
+    <div>
+      <span class="admin-brand">PWS <span>Admin Dashboard</span></span>
+    </div>
+    <div class="nav-right">
+      <div class="user-pill">
+        <img class="user-avatar" id="user-avatar" src="" alt=""/>
+        <span id="user-name">—</span>
+      </div>
+      <a class="site-link" href="index.html" target="_blank">View Site ↗</a>
+      <button class="signout-btn" id="signout-btn">Sign Out</button>
+    </div>
+  </nav>
+
+  <div class="admin-main">
+
+    <!-- LEFT: ADD / EDIT FORM -->
+    <div>
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title" id="form-title">Add New Episode</span>
+          <button class="btn btn-secondary" id="cancel-edit-btn" style="display:none;padding:.4rem .9rem;flex:none">Cancel</button>
+        </div>
+        <div class="panel-body">
+          <div class="form-row">
+            <div>
+              <label>Episode Number *</label>
+              <input type="number" id="f-num" placeholder="1" min="1"/>
+            </div>
+            <div>
+              <label>Published Date</label>
+              <input type="date" id="f-date"/>
+            </div>
+          </div>
+          <label>Podcast Name *</label>
+          <input type="text" id="f-podcast" placeholder="Podcast With Stories"/>
+          <label>Speaker Name *</label>
+          <input type="text" id="f-speaker" placeholder="Ashi Kulwant Singh"/>
+          <label>Topic / Tagline</label>
+          <input type="text" id="f-topic" placeholder="Exclusive Interview & Inspiring Conversations"/>
+          <label>Video URL (Archive.org or Google Drive direct link) *</label>
+          <input type="url" id="f-video" placeholder="https://ia600905.us.archive.org/…/video.mp4"/>
+          <label>Sponsored By</label>
+          <input type="text" id="f-sponsor" placeholder="DEVVERSE"/>
+
+          <label style="margin-top:1.4rem">Thumbnail</label>
+          <div class="thumb-preview" id="thumb-preview-box">
+            <canvas id="thumb-canvas" width="1280" height="720"></canvas>
+          </div>
+          <button class="btn btn-generate" id="gen-thumb-btn" style="margin-top:.7rem">✦ Generate AI Thumbnail</button>
+
+          <div class="btn-row">
+            <button class="btn btn-primary" id="save-btn">Save Episode</button>
+          </div>
+          <div class="status-msg" id="status-msg"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: EPISODES LIST -->
+    <div>
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">All Episodes</span>
+          <span id="ep-count" style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--muted)"></span>
+        </div>
+        <div class="panel-body" style="padding:1rem">
+          <div id="episodes-list"><div class="loading-spinner">Loading…</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Firebase -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, orderBy, query, Timestamp }
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getStorage, ref, uploadString, getDownloadURL }
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+  const SUPER_ADMIN = 'vjysupermacy@gmail.com';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyA-wk7PG924-vazzmf5RpzCNzKlArLXdds",
+    authDomain: "poodcast-e02da.firebaseapp.com",
+    projectId: "poodcast-e02da",
+    storageBucket: "poodcast-e02da.firebasestorage.app",
+    messagingSenderId: "27280570286",
+    appId: "1:27280570286:web:41f1f21d621fae888e7a3f",
+    measurementId: "G-44CDLYF2P1"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const storage = getStorage(app);
+
+  // ── AUTH ──
+  document.getElementById('google-login-btn').addEventListener('click', async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      if (result.user.email !== SUPER_ADMIN) {
+        await signOut(auth);
+        document.getElementById('login-error').classList.add('show');
+      }
+    } catch(e) {
+      console.error(e);
+      document.getElementById('login-error').classList.add('show');
+    }
+  });
+
+  document.getElementById('signout-btn').addEventListener('click', () => signOut(auth));
+
+  onAuthStateChanged(auth, user => {
+    if (user && user.email === SUPER_ADMIN) {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('admin-screen').style.display = 'block';
+      document.getElementById('user-name').textContent = user.displayName || user.email;
+      document.getElementById('user-avatar').src = user.photoURL || '';
+      loadEpisodes();
+    } else {
+      document.getElementById('login-screen').style.display = 'flex';
+      document.getElementById('admin-screen').style.display = 'none';
+    }
+  });
+
+  // ── THUMBNAIL GENERATION ──
+  function generateThumbnail(podcastName, speakerName, episodeNum, topic) {
+    const canvas = document.getElementById('thumb-canvas');
+    const ctx = canvas.getContext('2d');
+    const W = 1280, H = 720;
+    canvas.width = W; canvas.height = H;
+
+    // Background gradient (deep dark blue like the original)
+    const grad = ctx.createLinearGradient(0, 0, W, H);
+    grad.addColorStop(0, '#07071a');
+    grad.addColorStop(0.5, '#0d0d2b');
+    grad.addColorStop(1, '#050510');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+
+    // Radial accent glow (gold)
+    const glow = ctx.createRadialGradient(W*0.65, H*0.4, 0, W*0.65, H*0.4, 500);
+    glow.addColorStop(0, 'rgba(201,168,76,0.18)');
+    glow.addColorStop(1, 'transparent');
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, W, H);
+
+    // Concentric circles (left side decoration)
+    ctx.save();
+    ctx.translate(160, H/2);
+    for (let i = 0; i < 6; i++) {
+      ctx.strokeStyle = `rgba(255,255,255,${0.04 + i*0.02})`;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(0, 0, 60 + i*40, 0, Math.PI*2);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // Dot grid top right
+    ctx.fillStyle = 'rgba(201,168,76,0.35)';
+    for (let r=0; r<4; r++) for (let c=0; c<5; c++) {
+      ctx.beginPath();
+      ctx.arc(W - 180 + c*18, 80 + r*18, 3, 0, Math.PI*2);
+      ctx.fill();
+    }
+
+    // Bottom right dot grid
+    ctx.fillStyle = 'rgba(201,168,76,0.2)';
+    for (let r=0; r<3; r++) for (let c=0; c<4; c++) {
+      ctx.beginPath();
+      ctx.arc(W - 120 + c*18, H - 100 + r*18, 2.5, 0, Math.PI*2);
+      ctx.fill();
+    }
+
+    // Lightbulb icon (top right)
+    ctx.save();
+    ctx.translate(W - 110, 55);
+    ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.arc(0, -10, 22, 0.2, Math.PI - 0.2);
+    ctx.lineTo(-12, 12); ctx.lineTo(12, 12);
+    ctx.closePath(); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(-8, 18); ctx.lineTo(8, 18);
+    ctx.moveTo(-6, 24); ctx.lineTo(6, 24);
+    ctx.stroke();
+    // Glow lines
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    ctx.lineWidth = 1.5;
+    for (let a=-60; a<=60; a+=30) {
+      const rad = (a * Math.PI/180);
+      ctx.beginPath();
+      ctx.moveTo(Math.cos(rad-Math.PI/2)*28, Math.sin(rad-Math.PI/2)*28 - 10);
+      ctx.lineTo(Math.cos(rad-Math.PI/2)*38, Math.sin(rad-Math.PI/2)*38 - 10);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // EPS badge
+    const badgeX = 320, badgeY = H - 100, badgeW = 140, badgeH = 58;
+    ctx.fillStyle = '#2d2df0';
+    roundRect(ctx, badgeX, badgeY, badgeW, badgeH, 8);
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 28px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(`Eps ${episodeNum}`, badgeX + badgeW/2, badgeY + 38);
+
+    // Main title
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'left';
+    ctx.font = 'bold 90px sans-serif';
+    ctx.fillText('Podcast With', 300, 260);
+    ctx.fillText('Stories', 300, 360);
+
+    // "Ft." italic
+    ctx.font = 'italic 38px Georgia, serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.fillText('Ft. ' + speakerName, 490, H - 95);
+
+    // Topic text
+    ctx.font = '22px Georgia, serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    ctx.fillText('Exclusive Interview &', 490, H - 55);
+    ctx.fillText('Inspiring Conversations', 490, H - 28);
+
+    // Bottom gold accent bar
+    const barGrad = ctx.createLinearGradient(0, H-5, W, H-5);
+    barGrad.addColorStop(0, 'transparent');
+    barGrad.addColorStop(0.3, '#c9a84c');
+    barGrad.addColorStop(0.7, '#c9a84c');
+    barGrad.addColorStop(1, 'transparent');
+    ctx.fillStyle = barGrad;
+    ctx.fillRect(0, H-4, W, 4);
+
+    return canvas.toDataURL('image/jpeg', 0.92);
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x+r, y);
+    ctx.lineTo(x+w-r, y); ctx.arcTo(x+w, y, x+w, y+r, r);
+    ctx.lineTo(x+w, y+h-r); ctx.arcTo(x+w, y+h, x+w-r, y+h, r);
+    ctx.lineTo(x+r, y+h); ctx.arcTo(x, y+h, x, y+h-r, r);
+    ctx.lineTo(x, y+r); ctx.arcTo(x, y, x+r, y, r);
+    ctx.closePath(); ctx.fill();
+  }
+
+  let currentThumbDataUrl = null;
+  document.getElementById('gen-thumb-btn').addEventListener('click', () => {
+    const name = document.getElementById('f-podcast').value || 'Podcast With Stories';
+    const speaker = document.getElementById('f-speaker').value || 'Guest Speaker';
+    const num = document.getElementById('f-num').value || '1';
+    const topic = document.getElementById('f-topic').value || '';
+    currentThumbDataUrl = generateThumbnail(name, speaker, num, topic);
+    // canvas is already showing in the preview box
+  });
+
+  // Auto-generate preview on input
+  ['f-podcast','f-speaker','f-num'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => {
+      if (document.getElementById('f-speaker').value) {
+        const n = document.getElementById('f-podcast').value || 'Podcast With Stories';
+        const s = document.getElementById('f-speaker').value;
+        const e = document.getElementById('f-num').value || '1';
+        currentThumbDataUrl = generateThumbnail(n, s, e, '');
+      }
+    });
+  });
+
+  // ── SAVE EPISODE ──
+  let editingId = null;
+  document.getElementById('save-btn').addEventListener('click', async () => {
+    const btn = document.getElementById('save-btn');
+    const status = document.getElementById('status-msg');
+    const num = parseInt(document.getElementById('f-num').value);
+    const podcast = document.getElementById('f-podcast').value.trim();
+    const speaker = document.getElementById('f-speaker').value.trim();
+    const video = document.getElementById('f-video').value.trim();
+
+    if (!num || !podcast || !speaker || !video) {
+      status.className = 'status-msg error';
+      status.textContent = 'Please fill in Episode Number, Podcast Name, Speaker, and Video URL.';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+    status.className = 'status-msg';
+
+    try {
+      let thumbnailUrl = '';
+      if (currentThumbDataUrl) {
+        const storageRef = ref(storage, `thumbnails/ep${num}_${Date.now()}.jpg`);
+        await uploadString(storageRef, currentThumbDataUrl, 'data_url');
+        thumbnailUrl = await getDownloadURL(storageRef);
+      }
+
+      const data = {
+        episodeNumber: num,
+        podcastName: podcast,
+        speakerName: speaker,
+        topic: document.getElementById('f-topic').value.trim(),
+        videoUrl: video,
+        sponsoredBy: document.getElementById('f-sponsor').value.trim(),
+        publishedDate: document.getElementById('f-date').value || new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}),
+        thumbnailUrl,
+        updatedAt: Timestamp.now()
+      };
+
+      if (editingId) {
+        await updateDoc(doc(db, 'episodes', editingId), data);
+        status.className = 'status-msg success';
+        status.textContent = '✓ Episode updated successfully!';
+      } else {
+        data.createdAt = Timestamp.now();
+        await addDoc(collection(db, 'episodes'), data);
+        status.className = 'status-msg success';
+        status.textContent = '✓ Episode added successfully!';
+      }
+
+      resetForm();
+      loadEpisodes();
+    } catch(e) {
+      console.error(e);
+      status.className = 'status-msg error';
+      status.textContent = 'Error: ' + e.message;
+    }
+    btn.disabled = false;
+    btn.textContent = editingId ? 'Update Episode' : 'Save Episode';
+  });
+
+  function resetForm() {
+    editingId = null;
+    ['f-num','f-podcast','f-speaker','f-topic','f-video','f-sponsor','f-date'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    currentThumbDataUrl = null;
+    document.getElementById('form-title').textContent = 'Add New Episode';
+    document.getElementById('save-btn').textContent = 'Save Episode';
+    document.getElementById('cancel-edit-btn').style.display = 'none';
+    // Reset canvas
+    const canvas = document.getElementById('thumb-canvas');
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+
+  document.getElementById('cancel-edit-btn').addEventListener('click', resetForm);
+
+  // ── LOAD EPISODES ──
+  async function loadEpisodes() {
+    const list = document.getElementById('episodes-list');
+    list.innerHTML = '<div class="loading-spinner">Loading episodes…</div>';
+    try {
+      const q = query(collection(db, 'episodes'), orderBy('episodeNumber', 'asc'));
+      const snap = await getDocs(q);
+      document.getElementById('ep-count').textContent = snap.size + ' episode' + (snap.size !== 1 ? 's' : '');
+      if (snap.empty) {
+        list.innerHTML = '<div class="empty-list">No episodes yet. Add your first one!</div>';
+        return;
+      }
+      list.innerHTML = '';
+      snap.forEach(docSnap => {
+        const ep = docSnap.data();
+        const item = document.createElement('div');
+        item.className = 'ep-item';
+        item.innerHTML = `
+          <div class="ep-item-thumb">
+            ${ep.thumbnailUrl
+              ? `<img src="${ep.thumbnailUrl}" alt="thumbnail" style="width:100%;height:100%;object-fit:cover"/>`
+              : `Ep ${ep.episodeNumber}`
+            }
+          </div>
+          <div class="ep-item-body">
+            <div class="ep-item-num">Episode ${String(ep.episodeNumber).padStart(2,'0')}</div>
+            <div class="ep-item-title">Ft. ${ep.speakerName}</div>
+            <div class="ep-item-speaker">${ep.podcastName}${ep.sponsoredBy ? ' · Sponsored by ' + ep.sponsoredBy : ''}</div>
+          </div>
+          <div class="ep-item-actions">
+            <button class="icon-btn edit" data-id="${docSnap.id}">✎</button>
+            <button class="icon-btn" data-id="${docSnap.id}" data-delete>✕</button>
+          </div>
+        `;
+        item.querySelector('.icon-btn.edit').addEventListener('click', () => startEdit(docSnap.id, ep));
+        item.querySelector('[data-delete]').addEventListener('click', () => deleteEpisode(docSnap.id, ep.episodeNumber));
+        list.appendChild(item);
+      });
+    } catch(e) {
+      list.innerHTML = '<div class="empty-list" style="color:var(--red)">Error loading episodes: ' + e.message + '</div>';
+    }
+  }
+
+  function startEdit(id, ep) {
+    editingId = id;
+    document.getElementById('f-num').value = ep.episodeNumber;
+    document.getElementById('f-podcast').value = ep.podcastName || '';
+    document.getElementById('f-speaker').value = ep.speakerName || '';
+    document.getElementById('f-topic').value = ep.topic || '';
+    document.getElementById('f-video').value = ep.videoUrl || '';
+    document.getElementById('f-sponsor').value = ep.sponsoredBy || '';
+    document.getElementById('f-date').value = '';
+    document.getElementById('form-title').textContent = 'Edit Episode ' + ep.episodeNumber;
+    document.getElementById('save-btn').textContent = 'Update Episode';
+    document.getElementById('cancel-edit-btn').style.display = '';
+    if (ep.thumbnailUrl) {
+      currentThumbDataUrl = null;
+      const canvas = document.getElementById('thumb-canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => { ctx.drawImage(img, 0, 0, canvas.width, canvas.height); };
+      img.src = ep.thumbnailUrl;
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.getElementById('status-msg').className = 'status-msg';
+  }
+
+  async function deleteEpisode(id, num) {
+    if (!confirm(`Delete Episode ${num}? This cannot be undone.`)) return;
+    await deleteDoc(doc(db, 'episodes', id));
+    loadEpisodes();
+  }
+</script>
+</body>
+</html>
