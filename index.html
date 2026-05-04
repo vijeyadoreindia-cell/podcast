@@ -77,10 +77,8 @@
     .nav-logo { display: flex; align-items: center; gap: .7rem; text-decoration: none; }
     .nav-logo-icon {
       width: 36px; height: 36px; border-radius: 8px;
-      background: linear-gradient(135deg, var(--purple), var(--pink));
-      display: flex; align-items: center; justify-content: center;
-      font-family: 'Playfair Display', serif;
-      font-size: 1rem; font-weight: 700; color: #fff;
+      display: block;
+      object-fit: cover;
       box-shadow: 0 0 20px rgba(108,61,232,0.45);
     }
     .nav-logo-text {
@@ -383,7 +381,7 @@
 
 <nav>
   <a class="nav-logo" href="index.html">
-    <div class="nav-logo-icon">P</div>
+    <img class="nav-logo-icon" src="favicon.svg" alt="Podcast With Stories logo"/>
     <span class="nav-logo-text">Podcast <em>With Stories</em></span>
   </a>
   <div class="nav-right">
