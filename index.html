@@ -381,7 +381,7 @@
 
 <nav>
   <a class="nav-logo" href="index.html">
-    <img class="nav-logo-icon" src="favicon.svg" alt="Podcast With Stories logo"/>
+    <img class="nav-logo-icon" id="nav-logo-img" src="./favicon.svg" alt="Podcast With Stories logo"/>
     <span class="nav-logo-text">Podcast <em>With Stories</em></span>
   </a>
   <div class="nav-right">
@@ -490,6 +490,14 @@
   const authLabel = document.getElementById('nav-auth-label');
   const authIcon  = document.getElementById('nav-auth-icon');
   const avatar    = document.getElementById('nav-user-avatar');
+  const navLogoImg = document.getElementById('nav-logo-img');
+  const FALLBACK_LOGO_DATA_URL = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%2307070a'/%3E%3Crect width='64' height='64' rx='10' fill='none' stroke='%23c9a84c' stroke-width='2'/%3E%3Ctext x='32' y='40' font-family='Georgia,serif' font-size='18' font-weight='bold' fill='%23c9a84c' text-anchor='middle'%3EPWS%3C/text%3E%3C/svg%3E";
+
+  if (navLogoImg) {
+    navLogoImg.addEventListener('error', () => {
+      navLogoImg.src = FALLBACK_LOGO_DATA_URL;
+    }, { once: true });
+  }
 
   onAuthStateChanged(auth, user => {
     if (user && user.email === SUPER_ADMIN) {
