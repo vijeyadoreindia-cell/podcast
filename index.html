@@ -482,6 +482,8 @@
   });
   const auth = getAuth(app);
   const db   = getFirestore(app);
+  const urlParams = new URLSearchParams(window.location.search);
+  const requestedEpisodeNumber = Number.parseInt(urlParams.get('ep') || '', 10);
 
   // ── SMART NAV BUTTON ──
   const authBtn   = document.getElementById('nav-auth-btn');
@@ -529,8 +531,13 @@
         return;
       }
       grid.innerHTML = '';
+      let requestedEpisodeData = null;
       snap.forEach(d => {
         const ep = d.data();
+        const epNumber = Number.parseInt(ep.episodeNumber, 10);
+        if (Number.isInteger(requestedEpisodeNumber) && epNumber === requestedEpisodeNumber) {
+          requestedEpisodeData = ep;
+        }
         const card = document.createElement('div');
         card.className = 'ep-card';
         card.innerHTML = `
@@ -563,6 +570,11 @@
         card.addEventListener('click', () => openModal(ep));
         grid.appendChild(card);
       });
+
+      // If URL has ?ep=<number>, open that episode automatically.
+      if (requestedEpisodeData) {
+        openModal(requestedEpisodeData);
+      }
     } catch(e) {
       console.error(e);
       grid.innerHTML = '<div class="empty-state">Failed to load episodes.</div>';
